@@ -24,3 +24,9 @@ D:\development\CRUD-GameStoreExample\obj\Debug\net8.0\refint\CRUD-GameStoreExamp
 D:\development\CRUD-GameStoreExample\obj\Debug\net8.0\CRUD-GameStoreExample.pdb
 D:\development\CRUD-GameStoreExample\obj\Debug\net8.0\CRUD-GameStoreExample.genruntimeconfig.cache
 D:\development\CRUD-GameStoreExample\obj\Debug\net8.0\ref\CRUD-GameStoreExample.dll
+D:\development\CRUD-GameStoreExample\bin\Debug\net8.0\Microsoft.OpenApi.dll
+D:\development\CRUD-GameStoreExample\bin\Debug\net8.0\MinimalApis.Extensions.dll
+D:\development\CRUD-GameStoreExample\bin\Debug\net8.0\MiniValidation.dll
+D:\development\CRUD-GameStoreExample\obj\Debug\net8.0\CRUD-GameStoreExample.csproj.AssemblyReference.cache
+D:\development\CRUD-GameStoreExample\obj\Debug\net8.0\CRUD-GameStoreExample.MvcApplicationPartsAssemblyInfo.cs
+D:\development\CRUD-GameStoreExample\obj\Debug\net8.0\CRUD-Gam.42E48676.Up2Date
