@@ -1,7 +1,9 @@
 using System;
 using CRUD_GameStoreExample.Data;
 using CRUD_GameStoreExample.Entities;
+using CRUD_GameStoreExample.Mapping;
 using GameStore.dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace CRUD_GameStoreExample.Endpoints;
 
@@ -9,7 +11,7 @@ public static class GamesEndpoints
 {
     const string GetGameEndpointName = "GetGame";
 
-    private static readonly List<GameDto> games = [
+    private static readonly List<GameSummaryDto> games = [
         new (
             1,
             "Street Fighter 2",
@@ -41,66 +43,61 @@ public static class GamesEndpoints
         group.MapGet("/", () => games);
 
         // GET /games/1
-        group.MapGet("/{id}", (int id) => 
+        group.MapGet("/{id}", (int id, GameStoreContext dbContext) => 
         {
-            GameDto? game = games.Find(game => game.Id == id);
+            // Searches the cache first, then searches the DB
+            Game? game = dbContext.Games.Find(id);
 
-            return game is null ? Results.NotFound() : Results.Ok(game);
+            return game is null ?
+                Results.NotFound() : Results.Ok(game.ToGameDetailsDto());
         })
             .WithName(GetGameEndpointName);
 
-        group.MapPost("/", (CreateGameDTO newGame, GameStoreContext dbContext) =>
+        group.MapPost("/", (CreateGameDto newGame, GameStoreContext dbContext) =>
         {
-            Game game = new()
-            {
-                Name = newGame.Name,
-                Genre = dbContext.Genres.Find(newGame.GenreId),
-                GenreId = newGame.GenreId,
-                Price = newGame.Price,
-                ReleaseDate = newGame.ReleaseDate
-            };
+            // Taking the received information, converting to common type
+            Game game = newGame.ToEntity();
+            // Would use this line if we were returning Genre as a string
+            // game.Genre = dbContext.Genres.Find(game.GenreId);
 
             dbContext.Games.Add(game);
             dbContext.SaveChanges();
 
-            GameDto gameDto = new(
-                game.Id,
-                game.Name,
-                game.Genre!.Name,
-                game.Price,
-                game.ReleaseDate);
+            
 
-            return Results.CreatedAtRoute(GetGameEndpointName, new { id = game.Id }, gameDto);
+            return Results.CreatedAtRoute(
+                GetGameEndpointName,
+                new { id = game.Id },
+                game.ToGameDetailsDto());
         });
 
         // PUT /games/1
-        group.MapPut("/{id}", (int id, UpdateGameDTO updatedGame) => 
+        group.MapPut("/{id}", (int id, UpdateGameDto updatedGame, GameStoreContext dbContext) => 
         {
-            var index = games.FindIndex(game => game.Id == id);
+            var existingGame = dbContext.Games.Find(id);
 
             // If unable to find in list, index = -1
             // Other Option is to turn Put into Post.
             // However, that risks conflicting Id's
-            if (index == -1)
+            if (existingGame is null)
             {
                 return Results.NotFound();
             }
 
-            games[index] = new GameDto(
-                id,
-                updatedGame.Name,
-                updatedGame.Genre,
-                updatedGame.Price,
-                updatedGame.ReleaseDate
-            );
+            dbContext.Entry(existingGame)
+                    .CurrentValues
+                    .SetValues(updatedGame.ToEntity(id));
+            dbContext.SaveChanges();
 
             return Results.NoContent();
         });
 
         // DELETE /games/1
-        app.MapDelete("/{id}", (int id) => 
+        group.MapDelete("/{id}", (int id, GameStoreContext dbContext) => 
         {
-            games.RemoveAll(game => game.Id == id);
+            dbContext.Games
+                     .Where(game => game.Id == id)
+                     .ExecuteDelete();
 
             return Results.NoContent();
         });
