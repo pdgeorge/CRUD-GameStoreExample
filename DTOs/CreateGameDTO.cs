@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GameStore.dto;
 
-public record class CreateGameDTO(
+public record class CreateGameDto(
     [Required][StringLength(50)] string Name,
     [Required] int GenreId,
     [Range(1,100)] decimal Price,
